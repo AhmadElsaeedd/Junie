@@ -1,4 +1,4 @@
-/junie_venv
+/backend/junie_venv
 
 # Python virtual environments
 .env
