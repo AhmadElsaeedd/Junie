@@ -1,0 +1,15 @@
+/junie_venv
+
+# Python virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+*/pyvenv.cfg
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
