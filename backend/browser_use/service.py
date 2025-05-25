@@ -2,6 +2,7 @@ import logging
 from typing import Final
 
 import requests
+from browser_use.dataclasses.CreateRunResponse import CreateRunResponse
 from settings.variables import BROWSER_USE_API_KEY
 
 logger: Final[logging.Logger] = logging.getLogger(__name__)
@@ -40,6 +41,6 @@ class BrowserUseService:
             # TODO: Will need to log something about the user, etc. in the future.
             raise Exception("Failed to create run.")
         
-        # TODO: Serialize the response into a pydantic model.
+        create_run_response: Final[CreateRunResponse] = CreateRunResponse(**response.json())
         
-        return response.json()['id']
+        return create_run_response.id
