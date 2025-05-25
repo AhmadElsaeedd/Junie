@@ -20,6 +20,7 @@ class OpenAIService:
         transcription: Final[Transcription] = self.client.audio.transcriptions.create(
             file=(filename, file_content),
             model="whisper-1",
+            language="en",
         )
         
         return transcription.text
