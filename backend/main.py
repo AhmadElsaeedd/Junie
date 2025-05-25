@@ -1,16 +1,17 @@
-
+import logging
 from typing import Final
 
 import fastapi
 import uvicorn
 from routers.files import files_router
 
+logging.basicConfig(level=logging.INFO)
+
 app: Final[fastapi.FastAPI] = fastapi.FastAPI(
     title="Junie Backend API",
     description="API for Junie voice agent tasks.",
     version="0.1.0"
 )
-
 
 app.include_router(files_router, prefix="/files", tags=["File Operations"]) 
 
