@@ -4,6 +4,7 @@ from typing import Final
 import fastapi
 import uvicorn
 from file.routes import files_router
+from task.routes import tasks_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,6 +15,7 @@ app: Final[fastapi.FastAPI] = fastapi.FastAPI(
 )
 
 app.include_router(files_router, prefix="/files", tags=["File Operations"]) 
+app.include_router(tasks_router, prefix="/tasks", tags=["Task Operations"])
 
 @app.get("/", tags=["General"])
 async def read_root():
