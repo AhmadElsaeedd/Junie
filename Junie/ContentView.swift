@@ -9,7 +9,9 @@ import SwiftUI
 import AVFAudio // Import AVFAudio for AVAudioApplication
 
 struct ContentView: View {
-    @StateObject private var audioRecorder = AudioRecorder()
+    // Create APIMiddleware instance here, or it could be a shared instance passed down
+    private var apiMiddleware = APIMiddleware() 
+    @StateObject private var audioRecorder: AudioRecorder
     
     // State to manage the presentation of an alert if microphone access is denied.
     // Set to true when permission is denied and we want to inform the user.
@@ -89,7 +91,18 @@ struct ContentView: View {
         if !audioRecorder.hasPermission {
             return Color(.systemGray5)
         }
+        
+        if audioRecorder.isUploading {
+            return Color.orange.opacity(0.3)
+        }
+        
         return audioRecorder.isRecording ? Color.red.opacity(0.3) : Color.blue.opacity(0.2)
+    }
+    
+    // Initializer to inject APIMiddleware into AudioRecorder
+    init() {
+        let apiMiddlewareInstance = APIMiddleware()
+        _audioRecorder = StateObject(wrappedValue: AudioRecorder(apiMiddleware: apiMiddlewareInstance))
     }
 }
 
