@@ -22,7 +22,7 @@ async def upload_audio_file(audio_file: UploadFile):
 
     try:        
         logger.info(f"File '{target_file_name}' received.")
-        FileService.create_audio_file(file=audio_file)
+        FileService.transcribe_audio_file(file=audio_file)
         
         return JSONResponse(
             content={"message": f"File '{target_file_name}' successfully uploaded."}, 
