@@ -3,7 +3,7 @@ from typing import Final
 
 import fastapi
 import uvicorn
-from routers.files import files_router
+from file.routes import files_router
 
 logging.basicConfig(level=logging.INFO)
 

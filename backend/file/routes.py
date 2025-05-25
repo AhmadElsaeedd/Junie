@@ -3,7 +3,7 @@ from typing import Final
 
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-from services.files import FileService
+from file.service import FileService
 
 logger: Final[logging.Logger] = logging.getLogger(__name__)
 
