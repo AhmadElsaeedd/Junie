@@ -2,8 +2,9 @@ import logging
 from typing import Final
 
 import requests
-from browser_use.dataclasses.CreateRunResponse import CreateRunResponse
 from settings.variables import BROWSER_USE_API_KEY
+
+from backend.browser_use.dataclasses.create_run_response import CreateRunResponse
 
 logger: Final[logging.Logger] = logging.getLogger(__name__)
 
