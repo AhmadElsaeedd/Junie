@@ -8,7 +8,6 @@ from file.utils import FileUtils
 
 logger: Final[logging.Logger] = logging.getLogger(__name__)
 
-# Define the router
 files_router: Final[APIRouter] = APIRouter()
 
 __SUCCESS_MESSAGE: Final[str] = "Successfully transcribed file."
