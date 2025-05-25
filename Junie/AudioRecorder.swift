@@ -24,14 +24,18 @@ class AudioRecorder: ObservableObject {
         audioSession = AVAudioSession.sharedInstance()
         AVAudioApplication.requestRecordPermission { [weak self] granted in
             DispatchQueue.main.async {
-                self?.hasPermission = granted
-                if granted {
-                    print("Microphone permission granted.")
-                    // Setup audio session immediately after permission is granted
-                    self?.setupAudioSession(activate: true)
-                } else {
+                guard let self = self else { return }
+                self.hasPermission = granted
+                
+                guard granted else {
                     print("Microphone permission denied.")
+                    completion(granted)
+                    return
                 }
+
+                print("Microphone permission granted.")
+                // Setup audio session immediately after permission is granted
+                self.setupAudioSession(activate: true)
                 completion(granted)
             }
         }
@@ -125,32 +129,36 @@ class AudioRecorder: ObservableObject {
 
         do {
             audioRecorder = try AVAudioRecorder(url: url, settings: settings)
-            // audioRecorder?.delegate = self  // Assign delegate if you implement AVAudioRecorderDelegate methods
-            audioRecorder?.prepareToRecord() // Prepares the recorder, allocating resources etc.
-            
-            if audioRecorder?.record() == true {
-                DispatchQueue.main.async {
-                    self.isRecording = true
-                }
-                print("Recording started successfully.")
-            } else {
-                print("Failed to start recording: AVAudioRecorder.record() returned false or nil.")
-                // isRecording remains false or should be explicitly set if there was a prior optimistic update
+
+            guard let audioRecorder = audioRecorder else {
+                print("AudioRecorder: Error - Audio recorder was nil after initialization.")
+                return
             }
+
+            audioRecorder.prepareToRecord()
+
+            guard audioRecorder.record() else {
+                print("Failed to start recording: AVAudioRecorder.record() returned false.")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.isRecording = true
+            }
+            print("Recording started successfully.")
         } catch {
             print("Failed to initialize or start AVAudioRecorder: \(error.localizedDescription)")
-            // isRecording remains false
         }
     }
 
     func stopRecording() {
-        guard let recorder = audioRecorder, isRecording else { // Ensure there is a recorder instance and we are actually recording
+        guard let recorder = audioRecorder, isRecording else {
             // If isRecording is true but recorder is nil, or vice-versa, it indicates a state inconsistency.
-            // For now, we only stop if both conditions are met. Consider logging if isRecording is true but recorder is nil.
-            if isRecording && audioRecorder == nil {
-                print("Warning: isRecording is true, but audioRecorder is nil. Resetting state.")
-                DispatchQueue.main.async { self.isRecording = false } // Reset UI state
-            }
+            print("Warning: isRecording is true, but audioRecorder is nil. Resetting state.")
+            DispatchQueue.main.async { 
+                self.isRecording = false
+                self.audioRecorder = nil
+            } // Reset UI state
             return
         }
 
@@ -162,29 +170,30 @@ class AudioRecorder: ObservableObject {
         }
         print("Recording stopped.")
 
-        if let url = self.recordingURL {
-            print("AudioRecorder: Recording saved to \(url.path). Preparing to upload.")
-            self.isUploading = true
-            self.uploadError = nil
-
-            apiMiddleware.uploadAudio(fileURL: url) { [weak self] result in
-                // Ensure UI updates are on the main thread
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success():
-                        print("AudioRecorder: Audio uploaded successfully via APIMiddleware.")
-                        // Delete the local file after successful upload
-                        // self?.deleteRecording(at: url)
-                    case .failure(let error):
-                        print("AudioRecorder: Failed to upload audio via APIMiddleware. Error: \(error.localizedDescription)")
-                    }
-                    self?.isUploading = false
-                }
-            }
-            self.recordingURL = nil
-        } else {
+        guard let url = self.recordingURL else {
             print("AudioRecorder: Error - Recording URL was nil after stopping.")
+            return
         }
+
+        print("AudioRecorder: Recording saved to \(url.path). Preparing to upload.")
+        self.isUploading = true
+        self.uploadError = nil
+
+        apiMiddleware.uploadAudio(fileURL: url) { [weak self] result in
+            // Ensure UI updates are on the main thread
+            DispatchQueue.main.async {
+                switch result {
+                case .success():
+                    print("AudioRecorder: Audio uploaded successfully via APIMiddleware.")
+                    // Delete the local file after successful upload
+                    self?.deleteRecording(at: url)
+                case .failure(let error):
+                    print("AudioRecorder: Failed to upload audio via APIMiddleware. Error: \(error.localizedDescription)")
+                }
+                self?.isUploading = false
+            }
+        }
+        self.recordingURL = nil
 
         // Deactivate the audio session after recording stops
         do {
@@ -195,8 +204,7 @@ class AudioRecorder: ObservableObject {
         }
     }
 
-    // Optional: Helper function to delete local recording after successful upload
-    /*
+    // Helper function to delete local recording after successful upload
     private func deleteRecording(at url: URL) {
         do {
             try FileManager.default.removeItem(at: url)
@@ -205,7 +213,6 @@ class AudioRecorder: ObservableObject {
             print("AudioRecorder: Error deleting local recording at \(url.path): \(error.localizedDescription)")
         }
     }
-    */
 
     func checkMicrophonePermission() {
         switch AVAudioApplication.shared.recordPermission {
