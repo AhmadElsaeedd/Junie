@@ -1,6 +1,7 @@
 import logging
 from typing import Final
 
+from browser_use.dataclasses.task_details import TaskDetails
 from browser_use.service import BrowserUseService
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
@@ -13,7 +14,8 @@ tasks_router: Final[APIRouter] = APIRouter()
 
 __SUCCESS_MESSAGE: Final[str] = "Successfully started task."
 __MESSAGE_KEY: Final[str] = "message"
-__RUN_ID_KEY: Final[str] = "run_id"
+__TASK_ID_KEY: Final[str] = "task_id"
+__TASK_LIVE_URL_KEY: Final[str] = "live_url"
 
 @tasks_router.post("/create/", tags=["Task Operations"])
 async def create_task(audio_file: UploadFile):
@@ -29,14 +31,15 @@ async def create_task(audio_file: UploadFile):
         
         transcription: Final[str] = FileService.transcribe_audio_file(file=audio_file)
         
-        run_id: Final[str] = BrowserUseService.create_run(instructions=transcription)
+        task_id: Final[str] = BrowserUseService.create_task(instructions=transcription)
         
-        # TODO: Get the live URL from the run id and return it to the caller.
+        task_details: Final[TaskDetails] = BrowserUseService.get_task_details(task_id=task_id)
         
         return JSONResponse(
             content={
                 __MESSAGE_KEY: __SUCCESS_MESSAGE,
-                __RUN_ID_KEY: run_id,
+                __TASK_ID_KEY: task_id,
+                __TASK_LIVE_URL_KEY: task_details.live_url,
             }, 
             status_code=200,
         )
