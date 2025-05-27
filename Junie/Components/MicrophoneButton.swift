@@ -9,31 +9,43 @@ import SwiftUI
 
 /// A reusable microphone button component that handles recording state and user interactions.
 struct MicrophoneButton: View {
+    // MARK: - Properties
     @ObservedObject var audioRecorder: AudioRecorder
     
+    // MARK: - Body
     var body: some View {
-        Image(systemName: "mic.fill")
-            .font(.system(size: 60))
-            .foregroundColor(buttonColor)
-            .padding(20)
-            .background(Circle().fill(backgroundColor))
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        if audioRecorder.hasPermission && !audioRecorder.isRecording {
-                            audioRecorder.startRecording()
-                        }
-                    }
-                    .onEnded { _ in
-                        if audioRecorder.isRecording {
-                            audioRecorder.stopRecording()
-                        }
-                    }
-            )
-            .disabled(!audioRecorder.hasPermission)
-            .shadow(radius: audioRecorder.isRecording ? 10 : 5)
+        Button(action: {}) {
+            Image(systemName: "mic.fill")
+                .font(.system(size: 60))
+                .foregroundColor(buttonColor)
+                .padding(20)
+                .background(Circle().fill(backgroundColor))
+                .shadow(radius: audioRecorder.isRecording ? 10 : 5)
+        }
+        .disabled(!audioRecorder.hasPermission)
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    handleRecordingStart()
+                }
+                .onEnded { _ in
+                    handleRecordingStop()
+                }
+        )
     }
     
+    // MARK: - Private Methods
+    private func handleRecordingStart() {
+        guard audioRecorder.hasPermission, !audioRecorder.isRecording else { return }
+        audioRecorder.startRecording()
+    }
+    
+    private func handleRecordingStop() {
+        guard audioRecorder.isRecording else { return }
+        audioRecorder.stopRecording()
+    }
+    
+    // MARK: - Private Properties
     private var buttonColor: Color {
         if !audioRecorder.hasPermission {
             return .gray
@@ -68,5 +80,11 @@ struct MicrophoneButton: View {
 #Preview("Uploading State") {
     let recorder = AudioRecorder(apiMiddleware: APIMiddleware())
     recorder.isUploading = true
+    return MicrophoneButton(audioRecorder: recorder)
+}
+
+#Preview("Disabled State") {
+    let recorder = AudioRecorder(apiMiddleware: APIMiddleware())
+    recorder.hasPermission = false
     return MicrophoneButton(audioRecorder: recorder)
 } 
