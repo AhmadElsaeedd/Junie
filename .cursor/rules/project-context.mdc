@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Context
+
+This is an iOS application that implements an agent running on a browser triggered after the user uses a hold-to-record audio feature with a modern SwiftUI interface. The app allows users to record audio by holding a microphone button, and automatically uploads the recording to a backend server.
+
+The project utilizes a Python package called browser_use to automate the tasks in the backend.
+
+## Key Features
+- Hold-to-record functionality
+- Real-time audio recording
+- Automatic upload to backend server
+- Modern SwiftUI interface with animations
+
+## Technical Stack
+- SwiftUI for UI
+- FastAPI backend
