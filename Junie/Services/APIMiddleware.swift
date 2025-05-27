@@ -25,7 +25,7 @@ enum APIMiddlewareError: Error, LocalizedError {
 
 class APIMiddleware {
     private let backendScheme = "https"
-    private let backendHost = "e612-2001-8f8-1135-494c-9017-5395-991a-a092.ngrok-free.app"
+    private let backendHost = "e147-2001-8f8-1135-494c-64ac-25d8-c671-f4d2.ngrok-free.app"
     private let audioUploadPath = "/tasks/create/"
 
     private func getAudioUploadURL() -> URL? {
