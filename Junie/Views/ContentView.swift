@@ -41,9 +41,7 @@ struct ContentView: View {
     private func checkMicrophonePermission() {
         guard !audioRecorder.hasPermission else { return }
         
-        audioRecorder.requestMicrophonePermission { [weak self] granted in
-            guard let self = self else { return }
-            
+        audioRecorder.requestMicrophonePermission { granted in
             if !granted {
                 if AVAudioApplication.shared.recordPermission == .denied {
                     self.showPermissionAlert = true
