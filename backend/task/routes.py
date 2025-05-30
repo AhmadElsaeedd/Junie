@@ -2,10 +2,11 @@ import logging
 from typing import Final
 
 from browser_use.service import BrowserUseService
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile, WebSocket
 from fastapi.responses import JSONResponse
 from file.service import FileService
 from file.utils import FileUtils
+from task.service import TaskService
 
 logger: Final[logging.Logger] = logging.getLogger(__name__)
 
@@ -14,6 +15,10 @@ tasks_router: Final[APIRouter] = APIRouter()
 __SUCCESS_MESSAGE: Final[str] = "Successfully started task."
 __MESSAGE_KEY: Final[str] = "message"
 __TASK_ID_KEY: Final[str] = "task_id"
+
+@tasks_router.websocket("/status/{task_id}")
+async def task_status_websocket(websocket: WebSocket, task_id: str):
+    TaskService.maintain_task_websocket(websocket=websocket, task_id=task_id)
 
 @tasks_router.post("/create/", tags=["Task Operations"])
 async def create_task(audio_file: UploadFile):
@@ -28,6 +33,8 @@ async def create_task(audio_file: UploadFile):
         transcription: Final[str] = FileService.transcribe_audio_file(file=audio_file)
         
         task_id: Final[str] = BrowserUseService.create_task(instructions=transcription)
+        
+        TaskService.create_background_monitoring_task(task_id=task_id)
         
         return JSONResponse(
             content={
